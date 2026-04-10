@@ -1,9 +1,8 @@
-import User from "../models/user.model.js"
+import {User} from "../models/user.model.js"
 import { asyncHandler } from "../utils/AsyncHandler.js"
 import { ApiError } from "../utils/ApiError.js"
 // const bcrypt=require('bcrypt')
-import bcrypt from "bcrypt"
-import jwt from "jsonwebtoken"
+
 import {ApiResponse} from "../utils/ApiResponse.js"
 
 
@@ -16,8 +15,8 @@ import {ApiResponse} from "../utils/ApiResponse.js"
 
 const registerUser=asyncHandler(async(req,res)=>{
 
+    
     const {username,email,password}=req.body
-
     if(
         ['username','email','password'].some((field)=>field?.trim()==="")
     ){
@@ -33,13 +32,16 @@ const registerUser=asyncHandler(async(req,res)=>{
     }
 
     const user= await User.create({
-        username:username,
-        email:email,
-        password:password
+        username,
+        email,
+        password
     })
 
-    const createdUser=User.findById(user._id).select("-password -refreshToken")
+    const createdUser=await User.findById(user._id).select("-password -refreshToken")
 
+    if(!createdUser){
+        throw new ApiError(500,"Problem in registring the User")
+    }
 
     return res
     .status(200)
