@@ -1,0 +1,28 @@
+{
+  "name": "genai_and_full_stack_project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Amaan0907/GenAI_and_Full_Stack_Project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Amaan0907/GenAI_and_Full_Stack_Project/issues"
+  },
+  "homepage": "https://github.com/Amaan0907/GenAI_and_Full_Stack_Project#readme",
+  "dependencies": {
+    "dotenv": "^17.4.1",
+    "express": "^5.2.1",
+    "mongoose": "^9.4.1",
+    "nodemon": "^3.1.14"
+  }
+}
