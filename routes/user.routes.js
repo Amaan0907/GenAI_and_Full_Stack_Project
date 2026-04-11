@@ -1,11 +1,12 @@
 import express from "express"
-import { loginUser, registerUser } from "../controllers/user.controller.js"
+import { loginUser, logoutUser, registerUser } from "../controllers/user.controller.js"
+import { verifyJwt } from "../middlewares/auth.middleware.js"
 
 const router=express.Router()
 
 router.route("/register").post(registerUser)
-router.route("/login").get(loginUser)
-
+router.route("/login").post(loginUser)
+router.route("/logout").get(verifyJwt,logoutUser)
 
 
 

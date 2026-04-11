@@ -4,14 +4,12 @@ import { ApiError } from "../utils/ApiError.js"
 // const bcrypt=require('bcrypt')
 import {ApiResponse} from "../utils/ApiResponse.js"
 import bcrypt from "bcrypt"
-
+import { Blacklist } from "../models/blacklist.model.js"
 
 const generateAccessAndRefreshToken=async(userId)=>{
    
-       console.log("userId received:", userId)        // ← add this
-       console.log("userId type:", typeof userId)
+
      const user=await User.findById(userId)
-     console.log(user)
  
      const accessToken=user.generateAccessToken()
      const refreshToken= user.generateRefreshToken()
@@ -82,7 +80,6 @@ const loginUser =asyncHandler(async(req,res)=>{
         throw new ApiError(400,"Username or email is required")
     }
 
-        
 
     const user=await User.findOne({
         $or:[{username},{email}]
@@ -94,7 +91,7 @@ const loginUser =asyncHandler(async(req,res)=>{
 
     const isPasswordValid = await user.isPasswordCorrect(password)
 
-    console.log(isPasswordValid)
+    
 
     if(!isPasswordValid){
         throw new ApiError(400,"Password is incorrect")
@@ -126,7 +123,37 @@ const loginUser =asyncHandler(async(req,res)=>{
 
 })
 
+const logoutUser=asyncHandler(async(req,res)=>{
+    await User.findByIdAndUpdate(req.user?._id,
+        {
+            $set:{refreshToken:undefined}
+
+        },
+        {
+            new:true
+        }
+    )
+
+    const options={
+        httpOnly:true,
+        secure:true
+    }
+
+    
+
+    
+    
+    return res
+    .status(200)
+    .clearCookie("accessToken",options)
+    .clearCookie("refreshToken",options)
+    .json(new ApiResponse(200,{},"User logged out successfully"))
+
+})
+
+
+
 
 export {
-    registerUser,loginUser
+    registerUser,loginUser,logoutUser
 }
