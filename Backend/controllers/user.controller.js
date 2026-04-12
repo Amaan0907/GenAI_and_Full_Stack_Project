@@ -4,7 +4,7 @@ import { ApiError } from "../utils/ApiError.js"
 // const bcrypt=require('bcrypt')
 import {ApiResponse} from "../utils/ApiResponse.js"
 import bcrypt from "bcrypt"
-import { Blacklist } from "../models/blacklist.model.js"
+
 
 const generateAccessAndRefreshToken=async(userId)=>{
    
@@ -20,11 +20,6 @@ const generateAccessAndRefreshToken=async(userId)=>{
    
     
 }
-
-
-
-
-
 
 /**
  * @name registerUser
