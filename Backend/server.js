@@ -1,12 +1,8 @@
-// import dotenv from "dotenv"
-// dotenv.config({
-//     path:"./.env"
-// })
 import "./config.js"
 import { app } from "./src/app.js"
 import { connectToDB } from "./database.js"
-import { invokeGemini } from "./services/Ai.service.js"
-
+import { resume,selfDescription,jobDescription } from "./services/temp.js"
+import {generateInterviewReport} from "./services/Ai.service.js"
 
 
 connectToDB()
@@ -18,7 +14,7 @@ connectToDB()
     app.listen(process.env.PORT,()=>{
         console.log(`Server is running on port ${process.env.PORT}`)
     })
-    invokeGemini()
+    // generateInterviewReport({resume,selfDescription,jobDescription})
 }
 
 ).catch((error)=>{

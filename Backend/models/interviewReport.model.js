@@ -1,8 +1,4 @@
 import mongoose,{Schema} from "mongoose"
-
-
-
-
 /**
  * Job description:string
  * resume text:string
@@ -35,90 +31,110 @@ import mongoose,{Schema} from "mongoose"
  * 
  */
 
-const technicalQuestionSchema=new Schema({
-    question:{
-        type:String,
-        required:[true,"Technical question is required"]
+const technicalQuestionSchema = new Schema({
+    question: {
+        type: String,
+        required: [true, "Technical question is required"]
     },
-    intention:{
-        type:String,
-        required:[true,"Intention is required"]
+    intention: {
+        type: String,
+        required: [true, "Intention is required"]
     },
-    answer:{
-        type:String,
-        required:[true,"Answer is required"]
+    answer: {
+        type: String,
+        required: [true, "Answer is required"]
     }
-},{
-    _id:false
-})
-const behaviourialQuestionSchema=new Schema({
-    question:{
-        type:String,
-        required:[true,"Technical question is required"]
-    },
-    intention:{
-        type:String,
-        required:[true,"Intention is required"]
-    },
-    answer:{
-        type:String,
-        required:[true,"Answer is required"]
-    }
-},{
-    _id:false
-})
+}, { _id: false })
 
-const skillGaps= new Schema({
+const behavioralQuestionSchema = new Schema({
+    question: {
+        type: String,
+        required: [true, "Behavioral question is required"]  
+    },
+    intention: {
+        type: String,
+        required: [true, "Intention is required"]
+    },
+    answer: {
+        type: String,
+        required: [true, "Answer is required"]
+    }
+}, { _id: false })
+
+const skillGapSchema = new Schema({
     skill: {
-        type:String,
-        required:[true,"Skills is required"]
-
+        type: String,
+        required: [true, "Skill is required"]
     },
     severity: {
-    type: string,
-    enum: ["low", "medium", "high"],
-    required:[true,"Severity is required"]
-          
-     }
-             
-},{
-    _id:false
-})
-
-const preparationPlanSchema=new Schema({
-    day:{
-        typr:Number,
-        required:[true,"Day is required"]
+        type: String,          
+        enum: ["low", "medium", "high"],
+        required: [true, "Severity is required"]
     },
-    focus:{
-        type:String,
-        required:[true,"Focus is required"]
-    },
-    tasks:[{
-        type:String,
-        required:[true,"Task is required"]
-
-    }]
-})
-
-
-const interviewReportSchema=new Schema({
-    jobDescription:{
-        type:String,
-        required:true,
-
-    },
-    resume:{
-        type:String
-    },
-    selfDescription:{
-        type:String
-    },
-    matchScore:{
-        type:Number,
-        min:0,
-        max:100
+    howToAddress: {            
+        type: String,
+        required: [true, "howToAddress is required"]
     }
-},{timestamps:true})
+}, { _id: false })
 
-export const InterviewReportModel = mongoose.model("InterviewReportModel",interviewReportSchema)
+const preparationPlanSchema = new Schema({
+    day: {
+        type: Number,           
+        required: [true, "Day is required"]
+    },
+    focus: {
+        type: String,
+        required: [true, "Focus is required"]
+    },
+    tasks: [{
+        type: String,
+        required: [true, "Task is required"]
+    }]
+}, { _id: false })              
+
+const strengthSchema = new Schema({
+    skill: {
+        type: String,
+        required: [true, "Skill is required"]
+    },
+    evidence: {
+        type: String,
+        required: [true, "Evidence is required"]
+    }
+}, { _id: false })
+
+const interviewReportSchema = new Schema({
+    jobDescription: {
+        type: String,
+        required: true
+    },
+    resume: {
+        type: String
+    },
+    selfDescription: {
+        type: String
+    },
+    title: {                   
+        type: String
+    },
+    overview: {                 
+        type: String
+    },
+    verdict: {                  
+        type: String,
+        enum: ["Strong Fit", "Good Fit", "Partial Fit", "Poor Fit"]
+    },
+    matchScore: {
+        type: Number,
+        min: 0,
+        max: 100
+    },
+    strengths: [strengthSchema],            
+    technicalQuestions: [technicalQuestionSchema],
+    behavioralQuestions: [behavioralQuestionSchema],  
+    skillGaps: [skillGapSchema],
+    preparationPlan: [preparationPlanSchema]
+
+}, { timestamps: true })
+
+export const InterviewReport = mongoose.model("InterviewReport", interviewReportSchema)
