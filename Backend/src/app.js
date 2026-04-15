@@ -13,7 +13,10 @@ app.use(cors({
     credentials:true
 }))
 
+import { interviewRouter } from "../routes/interview.routes.js"
+
 app.use("/api/auth",router)
+app.use("/api/interview",interviewRouter)
 
 
 

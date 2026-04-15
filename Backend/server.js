@@ -1,8 +1,7 @@
 import "./config.js"
 import { app } from "./src/app.js"
 import { connectToDB } from "./database.js"
-import { resume,selfDescription,jobDescription } from "./services/temp.js"
-import {generateInterviewReport} from "./services/Ai.service.js"
+
 
 
 connectToDB()
