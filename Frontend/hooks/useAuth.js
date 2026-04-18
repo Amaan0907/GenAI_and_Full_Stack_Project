@@ -13,7 +13,7 @@ export const useAuth=()=>{
         setLoading(true)
         try {
             const data=await login({email,password})
-            setUser(data.user)
+            setUser(data.data)
             setLoading(false)
         } catch (error) {
             console.log(error)
@@ -26,7 +26,7 @@ export const useAuth=()=>{
         try {
             const data=await register({username,email,password})
     
-            setUser(data.user)
+            setUser(data.data)
             setLoading(false)
         } catch (error) {
             console.log(error)
@@ -48,9 +48,14 @@ export const useAuth=()=>{
 
     useEffect(() => {
         const getAndSetUser = async () => {
-            const data = await getUser()
-            setUser(data.user)
-            setLoading(false)
+            try {
+                const data = await getUser()
+                setUser(data.data)
+                setLoading(false)
+            } catch (error) {
+                setLoading(false)
+                
+            }
         }
 
         getAndSetUser()

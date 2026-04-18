@@ -1,5 +1,4 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { log } from "console";
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY
