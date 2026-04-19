@@ -1,7 +1,7 @@
 import express from "express"
 import { verifyJwt } from "../middlewares/auth.middleware.js"
 import { upload } from "../middlewares/file.middleware.js"
-import { generateInterviewController } from "../controllers/interview.controller.js"
+import { generateInterviewController, getInterviewReport, getInterviewReportByIdController } from "../controllers/interview.controller.js"
 
 
 const interviewRouter=express.Router()
@@ -14,6 +14,21 @@ const interviewRouter=express.Router()
 
 interviewRouter.route("/").post(verifyJwt,upload.single("resume"),generateInterviewController)
 
+
+/**
+ * @route GET /api/auth/interview/report/:interviewId
+ * @description get interview report by interviewId
+ * @access private
+ */
+
+interviewRouter.get("/report/:interviewId",verifyJwt,getInterviewReport)
+/**
+ * @route GET /api/auth/interview/
+ * @description get all interview reports of the logged in user
+ * @access private
+ */
+
+interviewRouter.get("/",verifyJwt,getInterviewReportByIdController)
 
 
 export {interviewRouter}
