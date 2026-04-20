@@ -71,6 +71,10 @@ const getInterviewReport = asyncHandler(async(req,res)=>{
 
 const getInterviewReportByIdController=asyncHandler(async(req,res)=>{
     const interviewReports=await InterviewReport.find({user:req.user.id}).sort({createdAt:-1}).select("-resume -selfDescription -jobDescription -__v -technicalQuestions -behavioralQuestions -skillGaps -preparationPlan")
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200,{interviewReports},"Interview reports fetched successfully"))
 })
 
 export {generateInterviewController,getInterviewReport,getInterviewReportByIdController}
