@@ -1,0 +1,182 @@
+/* ==========================================================
+   SHARED APP NAVBAR — Kinetic Blueprint
+   ========================================================== */
+
+.app-nav {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  background: var(--surface);
+  border-bottom: 1px solid rgba(199, 196, 215, 0.2);
+  transition: background var(--transition-normal), box-shadow var(--transition-normal);
+}
+.app-nav--scrolled {
+  box-shadow: var(--shadow-card);
+}
+
+.app-nav__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-8);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+/* ── Brand ────────────────────────────────────────────────── */
+.app-nav__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.app-nav__logo {
+  line-height: 0;
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+}
+.app-nav__name {
+  font-family: var(--font-headline);
+  font-size: var(--text-title-sm);
+  font-weight: 800;
+  letter-spacing: var(--tracking-tight);
+  color: var(--on-surface);
+}
+
+/* ── Nav links ────────────────────────────────────────────── */
+.app-nav__links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  flex: 1;
+}
+.app-nav__link {
+  font-size: var(--text-body-md);
+  font-weight: 500;
+  color: var(--on-surface-variant);
+  text-decoration: none;
+  padding-bottom: var(--space-1);
+  border-bottom: 2px solid transparent;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+.app-nav__link:hover {
+  color: var(--primary);
+}
+.app-nav__link--active {
+  color: var(--primary);
+  font-weight: 700;
+  border-bottom-color: var(--primary);
+}
+.app-nav__link--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Right actions ────────────────────────────────────────── */
+.app-nav__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+.app-nav__icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--surface-container-low);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--on-surface-variant);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.app-nav__icon-btn:hover {
+  background: var(--surface-container);
+  color: var(--primary);
+}
+
+/* ── Avatar + dropdown ────────────────────────────────────── */
+.app-nav__user {
+  position: relative;
+}
+.app-nav__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--gradient-primary);
+  color: var(--on-primary);
+  font-family: var(--font-headline);
+  font-size: var(--text-body-md);
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+.app-nav__avatar:hover {
+  box-shadow: var(--shadow-glow);
+  transform: scale(1.05);
+}
+
+.app-nav__dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  min-width: 220px;
+  background: var(--surface-container-lowest);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-float);
+  border: 1px solid rgba(199, 196, 215, 0.2);
+  overflow: hidden;
+  animation: fade-up 0.2s cubic-bezier(0.4, 0, 0.2, 1) both;
+  z-index: var(--z-dropdown);
+}
+.app-nav__dropdown-header {
+  padding: var(--space-4) var(--space-5);
+}
+.app-nav__dropdown-name {
+  font-family: var(--font-headline);
+  font-weight: 700;
+  font-size: var(--text-body-md);
+  color: var(--on-surface);
+}
+.app-nav__dropdown-email {
+  font-size: var(--text-label);
+  color: var(--on-surface-muted);
+  margin-top: var(--space-1);
+}
+.app-nav__dropdown-divider {
+  height: 1px;
+  background: var(--outline-variant);
+  opacity: 0.3;
+}
+.app-nav__dropdown-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--space-3) var(--space-5);
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: var(--text-body-md);
+  font-weight: 500;
+  color: var(--on-surface);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  text-align: left;
+}
+.app-nav__dropdown-item:hover {
+  background: var(--surface-container-low);
+}
+.app-nav__dropdown-item--danger {
+  color: var(--error);
+}
+.app-nav__dropdown-item--danger:hover {
+  background: var(--error-container);
+}
