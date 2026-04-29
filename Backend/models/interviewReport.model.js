@@ -74,6 +74,22 @@ const skillGapSchema = new mongoose.Schema({
         type: String,
         enum: ["low", "medium", "high"],
         required: [true, "Severity is required"]
+    },
+    howToAddress: {
+        type: String
+    }
+}, {
+    _id: false
+})
+
+const strengthSchema = new mongoose.Schema({
+    skill: {
+        type: String,
+        required: [true, "Skill is required"]
+    },
+    evidence: {
+        type: String,
+        required: [true, "Evidence is required"]
     }
 }, {
     _id: false
@@ -110,6 +126,14 @@ const interviewReportSchema = new mongoose.Schema({
         min: 0,
         max: 100,
     },
+    verdict: {
+        type: String,
+        enum: ["Strong Fit", "Good Fit", "Partial Fit", "Poor Fit"],
+    },
+    overview: {
+        type: String,
+    },
+    strengths: [strengthSchema],
     technicalQuestions: [technicalQuestionSchema],
     behavioralQuestions: [behavioralQuestionSchema],
     skillGaps: [skillGapSchema],

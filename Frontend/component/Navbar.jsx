@@ -41,18 +41,26 @@ const Navbar = () => {
               </defs>
             </svg>
           </div>
+
           <span className="app-nav__name">InterviewIQ</span>
         </NavLink>
 
         {/* Nav links */}
         <nav className="app-nav__links" aria-label="App navigation">
           <NavLink
+            to="/dashboard"
+            id="nav-link-dashboard"
+            className={({ isActive }) => `app-nav__link ${isActive ? 'app-nav__link--active' : ''}`}
+          >
+            Dashboard
+          </NavLink>
+          <NavLink
             to="/"
             id="nav-link-reports"
             className={({ isActive }) => `app-nav__link ${isActive ? 'app-nav__link--active' : ''}`}
             end
           >
-            Reports
+            New Report
           </NavLink>
           <a href="#" id="nav-link-practice" className="app-nav__link app-nav__link--disabled" aria-disabled="true">
             Practice

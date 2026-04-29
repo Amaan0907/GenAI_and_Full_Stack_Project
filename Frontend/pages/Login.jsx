@@ -24,7 +24,7 @@ const AuthPage = () => {
   const handleLoginSubmit = async (e) => {
     e.preventDefault()
     await handleLogin({ email: loginEmail, password: loginPassword })
-    navigate('/')
+    navigate('/dashboard')
   }
 
   const handleRegisterSubmit = async (e) => {
@@ -35,7 +35,7 @@ const AuthPage = () => {
       return
     }
     await handleRegister({ username: regUsername, email: regEmail, password: regPassword })
-    navigate('/')
+    navigate('/dashboard')
   }
 
   return (

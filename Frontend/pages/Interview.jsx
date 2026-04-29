@@ -1,14 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { useParams, useNavigate, NavLink } from 'react-router-dom'
 import { useInterview } from '../hooks/useInterview'
-import Navbar from '../component/Navbar.jsx'
 import LoadingSpinner from '../component/LoadingSpinner.jsx'
 import './interview.css'
 
-/* ── helpers ── */
-const severityColor = { low: '#1a7f5a', medium: '#d97706', high: '#b3261e' }
-const severityBg    = { low: '#d1fae5', medium: '#fef3c7', high: '#f9dedc' }
-
+/* ── Helpers ── */
 const CircleProgress = ({ score }) => {
   const [animated, setAnimated] = useState(0)
   const r = 72
@@ -23,360 +19,300 @@ const CircleProgress = ({ score }) => {
 
   return (
     <svg viewBox="0 0 180 180" width="180" height="180" aria-label={`Match score: ${score}%`}>
-      {/* Track */}
       <circle cx="90" cy="90" r={r} fill="none" stroke="var(--surface-container-highest)" strokeWidth="10" />
-      {/* Progress */}
       <circle
         cx="90" cy="90" r={r}
         fill="none"
-        stroke="url(#score-gradient)"
+        stroke="#6b21a8" /* Deeper purple to match design */
         strokeWidth="10"
         strokeDasharray={circ}
         strokeDashoffset={offset}
         strokeLinecap="round"
         style={{ transform: 'rotate(-90deg)', transformOrigin: 'center', transition: 'stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)' }}
       />
-      <defs>
-        <linearGradient id="score-gradient" x1="0" y1="0" x2="180" y2="180" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#2c29bb" />
-          <stop offset="1" stopColor="#fd56a6" />
-        </linearGradient>
-      </defs>
       <text x="90" y="85" textAnchor="middle" fill="var(--on-surface)"
-        style={{ fontFamily: 'var(--font-headline)', fontSize: '2rem', fontWeight: 800 }}>
+        style={{ fontFamily: 'var(--font-headline)', fontSize: '2.5rem', fontWeight: 800 }}>
         {score}%
       </text>
-      <text x="90" y="108" textAnchor="middle" fill="var(--on-surface-muted)"
-        style={{ fontFamily: 'var(--font-body)', fontSize: '0.75rem', fontWeight: 500 }}>
-        Match Score
+      <text x="90" y="110" textAnchor="middle" fill="var(--on-surface-muted)"
+        style={{ fontFamily: 'var(--font-headline)', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.1em' }}>
+        MATCH SCORE
       </text>
     </svg>
   )
 }
 
-const AccordionItem = ({ question, answer, intention, index }) => {
-  const [open, setOpen] = useState(false)
+const AccordionList = ({ title, items, defaultOpen = false }) => {
+  const [open, setOpen] = useState(defaultOpen)
+  
+  if (!items || items.length === 0) return null
+
   return (
-    <div className={`accordion-item ${open ? 'accordion-item--open' : ''}`}>
-      <button
-        id={`accordion-btn-${index}`}
-        className="accordion-item__trigger"
-        onClick={() => setOpen(o => !o)}
-        aria-expanded={open}
-      >
-        <span className="accordion-item__q">{question}</span>
-        <span className="accordion-item__chevron" aria-hidden="true">{open ? '▲' : '▼'}</span>
+    <div className={`qa-accordion ${open ? 'qa-accordion--open' : ''}`}>
+      <button className="qa-accordion__header" onClick={() => setOpen(!open)}>
+        <span className="qa-accordion__icon" aria-hidden="true">⚡</span>
+        <span className="qa-accordion__title">{title}</span>
+        <span className="qa-accordion__chevron" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </span>
       </button>
+      
       {open && (
-        <div className="accordion-item__body animate-fade-in">
-          {intention && (
-            <p className="accordion-item__intention">
-              <strong>Why they ask:</strong> {intention}
-            </p>
-          )}
-          <p className="accordion-item__answer">{answer}</p>
+        <div className="qa-accordion__body animate-fade-in">
+          {items.map((item, idx) => (
+            <div key={idx} className="qa-item">
+              <p className="qa-item__q">{item.question}</p>
+              {item.intention && (
+                <p className="qa-item__i"><em>Why:</em> {item.intention}</p>
+              )}
+              <p className="qa-item__a">{item.answer}</p>
+            </div>
+          ))}
         </div>
       )}
     </div>
   )
 }
 
-const NAV_SECTIONS = [
-  { id: 'match-score',   label: 'Match Score',      icon: '🎯' },
-  { id: 'strengths',     label: 'Core Strengths',   icon: '💪' },
-  { id: 'gaps',          label: 'Skill Gaps',        icon: '🔍' },
-  { id: 'technical',     label: 'Technical Qs',      icon: '⚙️' },
-  { id: 'behavioral',    label: 'Behavioral Qs',     icon: '🧠' },
-  { id: 'prep-plan',     label: '7-Day Prep Plan',   icon: '📅' },
-]
-
+/* ══════════════════════════════════════════════════════════════
+   INTERVIEW REPORT PAGE
+   ══════════════════════════════════════════════════════════════ */
 const Interview = () => {
   const { interviewId } = useParams()
   const navigate = useNavigate()
   const { loading, report, getReportById } = useInterview()
-  const [activeSection, setActiveSection] = useState('match-score')
-  const sectionRefs = useRef({})
 
   useEffect(() => {
     if (interviewId) getReportById(interviewId)
   }, [interviewId])
 
-  // Scrollspy
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) setActiveSection(entry.target.id)
-        })
-      },
-      { rootMargin: '-30% 0px -60% 0px', threshold: 0 }
-    )
-    Object.values(sectionRefs.current).forEach(el => el && observer.observe(el))
-    return () => observer.disconnect()
-  }, [report])
-
-  const scrollTo = (id) => {
-    sectionRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
   if (loading) {
-    return (
-      <div className="page">
-        <Navbar />
-        <LoadingSpinner fullPage message="Loading your report…" />
-      </div>
-    )
+    return <LoadingSpinner fullPage message="Loading Detailed Analysis…" />
   }
 
   if (!report) {
     return (
-      <div className="page">
-        <Navbar />
-        <div className="interview-empty">
-          <div className="interview-empty__icon" aria-hidden="true">📋</div>
-          <h1 className="headline-lg">Report not found</h1>
-          <p className="body-muted">This report may have been deleted or doesn't exist.</p>
-          <button className="btn btn-primary" style={{ marginTop: 'var(--space-6)' }} onClick={() => navigate('/')}>
-            ← Back to Generator
-          </button>
-        </div>
+      <div className="interview-empty">
+        <h1 className="headline-lg">Report not found</h1>
+        <button className="btn btn-primary" onClick={() => navigate('/dashboard')}>
+          Back to Dashboard
+        </button>
       </div>
     )
   }
 
-  const scoreLabel = report.matchScore >= 75 ? 'Strong fit' : report.matchScore >= 50 ? 'Moderate fit' : 'Needs work'
-  const scoreColor = report.matchScore >= 75 ? '#1a7f5a' : report.matchScore >= 50 ? '#d97706' : '#b3261e'
+  const scoreLabel = report.matchScore >= 75 ? 'STRONG FIT' : report.matchScore >= 50 ? 'MODERATE FIT' : 'NEEDS WORK'
+  
+  const strengths = report.strengths || []
+  const gaps = report.skillGaps || []
 
   return (
-    <div className="interview-page page">
-      <Navbar />
+    <div className="report-layout">
+      
+      {/* ══════ SIDEBAR ══════ */}
+      <aside className="report-sidebar">
+        <div className="report-sidebar__brand">
+          <div className="report-sidebar__logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <rect width="24" height="24" rx="6" fill="#6b21a8" />
+              <path d="M7 17L12 7L17 17M10 14H14" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div>
+            <div className="report-sidebar__brand-name">InterviewIQ</div>
+            <div className="report-sidebar__brand-sub">AI PREP SUITE</div>
+          </div>
+        </div>
 
-      <div className="interview-layout container">
+        <nav className="report-sidebar__nav">
+          <button className="report-sidebar__link" onClick={() => navigate('/dashboard')}>
+            <span aria-hidden="true">⊞</span> Dashboard
+          </button>
+          <button className="report-sidebar__link report-sidebar__link--disabled">
+            <span aria-hidden="true">🎙️</span> Mock Interviews
+          </button>
+          <button className="report-sidebar__link report-sidebar__link--disabled">
+            <span aria-hidden="true">🗺️</span> Career Roadmap
+          </button>
+          <button className="report-sidebar__link report-sidebar__link--active">
+            <span aria-hidden="true">⏱️</span> History
+          </button>
+        </nav>
 
-        {/* ══════════ STICKY SIDEBAR ══════════ */}
-        <aside className="interview-sidebar" aria-label="Report navigation">
-          <div className="interview-sidebar__inner glass">
-            <p className="interview-sidebar__label text-muted">SECTIONS</p>
-            <nav aria-label="Report sections">
-              {NAV_SECTIONS.map(({ id, label, icon }) => (
-                <button
-                  key={id}
-                  id={`sidebar-${id}`}
-                  className={`interview-sidebar__link ${activeSection === id ? 'interview-sidebar__link--active' : ''}`}
-                  onClick={() => scrollTo(id)}
-                  aria-current={activeSection === id ? 'true' : undefined}
-                >
-                  <span className="interview-sidebar__link-icon" aria-hidden="true">{icon}</span>
-                  {label}
-                </button>
-              ))}
-            </nav>
+        <div className="report-sidebar__bottom">
+          <button className="btn btn-primary report-sidebar__cta" onClick={() => navigate('/')}>
+            New Simulation
+          </button>
+          <button className="report-sidebar__meta-link">
+            <span aria-hidden="true">⚙️</span> Settings
+          </button>
+          <button className="report-sidebar__meta-link">
+            <span aria-hidden="true">❓</span> Support
+          </button>
+        </div>
+      </aside>
 
-            <div className="interview-sidebar__divider" />
-
-            <button className="btn btn-ghost btn-sm interview-sidebar__back" onClick={() => navigate('/')}>
-              ← New Report
+      {/* ══════ MAIN ══════ */}
+      <main className="report-main animate-fade-up">
+        
+        {/* Header */}
+        <header className="report-header">
+          <div>
+            <div className="report-chip">{report.verdict?.toUpperCase() || 'DETAILED ANALYSIS'}</div>
+            <h1 className="report-title">{report.title || 'Technical Assessment'}</h1>
+          </div>
+          <div className="report-actions">
+            <button className="icon-btn" aria-label="Share">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            </button>
+            <button className="icon-btn" aria-label="Download">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             </button>
           </div>
-        </aside>
+        </header>
 
-        {/* ══════════ MAIN CONTENT ══════════ */}
-        <main className="interview-content" id="interview-main">
+        {/* Top Split: Score & Strengths */}
+        <div className="report-top-split">
+          
+          {/* Match Score */}
+          <section className="score-panel card">
+            <CircleProgress score={report.matchScore ?? 0} />
+            <div className={`score-badge score-badge--${report.matchScore >= 75 ? 'strong' : report.matchScore >= 50 ? 'moderate' : 'weak'}`}>
+              <span className="score-badge__icon" aria-hidden="true">✓</span> {report.verdict || scoreLabel}
+            </div>
+            <p className="score-desc">
+              {report.overview || (report.matchScore >= 75 
+                ? "You exceed technical requirements and align perfectly with team culture."
+                : "You meet some requirements but have noticeable gaps to bridge.")}
+            </p>
+          </section>
 
-          {/* Report title */}
-          <div className="interview-title-row animate-fade-up">
-            <div>
-              <div className="chip chip-primary">{report.title || 'Interview Report'}</div>
-              <h1 className="interview-main-title">Your Analysis Report.</h1>
-              <p className="body-muted">
-                Generated {report.createdAt ? new Date(report.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'recently'}
-              </p>
+          {/* Core Strengths */}
+          <section className="strengths-panel">
+            <div className="strengths-banner">
+              <h2>Core Strengths</h2>
+              <p>Key highlights from your profile that match the role requirements.</p>
+              <div className="strengths-banner__bg-accent" />
             </div>
-            <div className="interview-score-pill" style={{ background: scoreColor + '18', color: scoreColor }}>
-              {scoreLabel}
+            
+            <div className="strengths-cards">
+              {strengths.length > 0 ? strengths.slice(0, 2).map((s, i) => (
+                <div key={i} className="strength-card">
+                  <div className="strength-card__header">
+                    <span className="strength-card__icon" style={{color: i===0 ? '#8b5cf6' : '#059669'}}>
+                      {i===0 ? '💡' : '👥'}
+                    </span>
+                    <h3>{s.skill}</h3>
+                  </div>
+                  <p>{s.evidence}</p>
+                </div>
+              )) : (
+                <div className="strength-card"><p>No clear strengths identified.</p></div>
+              )}
             </div>
+          </section>
+
+        </div>
+
+        {/* Middle Split: Gaps & Q&A */}
+        <div className="report-mid-split">
+          
+          {/* Skill Gaps */}
+          <section className="gaps-panel">
+            <div className="section-head">
+              <span className="section-head__icon" style={{color: '#dc2626'}}>⚠️</span>
+              <h2>Skill Gaps & Focus Areas</h2>
+            </div>
+            
+            <div className="gaps-list">
+              {gaps.length > 0 ? gaps.map((gap, i) => (
+                <div key={i} className="gap-card">
+                  <div className="gap-card__icon">
+                    {gap.severity === 'high' ? '📈' : '💻'}
+                  </div>
+                  <div className="gap-card__content">
+                    <h3>{gap.skill}</h3>
+                    <p className="gap-card__quote">
+                      "You showed partial experience with {gap.skill.toLowerCase()}, but lacked specific depth."
+                    </p>
+                  </div>
+                  <div className={`gap-card__badge gap-card__badge--${gap.severity}`}>
+                    {gap.severity === 'high' ? 'CRITICAL' : 'MINOR'}
+                  </div>
+                </div>
+              )) : (
+                <div className="gap-card"><p>No major gaps found!</p></div>
+              )}
+            </div>
+          </section>
+
+          {/* Q&A Deep Dive */}
+          <section className="qa-panel">
+            <div className="section-head">
+              <span className="section-head__icon" style={{color: '#6b21a8'}}>🗂️</span>
+              <h2>Q&A Deep Dive</h2>
+            </div>
+            
+            <div className="qa-list">
+              <AccordionList 
+                title="Technical Performance" 
+                items={report.technicalQuestions} 
+                defaultOpen={true} 
+              />
+              <AccordionList 
+                title="Behavioral Signals" 
+                items={report.behavioralQuestions} 
+              />
+            </div>
+          </section>
+
+        </div>
+
+        {/* Bottom: Roadmap */}
+        <section className="roadmap-panel">
+          <div className="roadmap-header">
+            <h2>Personalized 7-Day Roadmap</h2>
+            <p>Focused plan to bridge your gaps before the final loop.</p>
+            <div className="roadmap-icon">📅</div>
           </div>
-
-          {/* ── SECTION 1: Match Score ── */}
-          <section
-            id="match-score"
-            ref={el => sectionRefs.current['match-score'] = el}
-            className="interview-section animate-fade-up delay-1"
-            aria-labelledby="section-match-score"
-          >
-            <h2 id="section-match-score" className="interview-section__title">
-              <span className="section-number">01</span> Match Score
-            </h2>
-            <div className="card interview-score-card">
-              <CircleProgress score={report.matchScore ?? 0} />
-              <div className="interview-score-card__text">
-                <p className="headline-md">
-                  <span style={{ color: scoreColor }}>{report.matchScore}%</span> match
-                </p>
-                <p className="body-muted" style={{ marginTop: 'var(--space-2)' }}>
-                  {scoreLabel} · {report.skillGaps?.length ?? 0} skill gaps identified ·{' '}
-                  {report.technicalQuestions?.length ?? 0} technical questions predicted
-                </p>
-                <div className="interview-score-bar" aria-hidden="true">
-                  <div
-                    className="interview-score-bar__fill"
-                    style={{ width: `${report.matchScore}%`, background: `linear-gradient(90deg, #2c29bb, #fd56a6)` }}
-                  />
+          
+          <div className="roadmap-timeline">
+            {report.preparationPlan?.map((plan, i) => (
+              <div key={i} className="timeline-item">
+                <div className="timeline-item__dot" />
+                {i !== report.preparationPlan.length - 1 && <div className="timeline-item__line" />}
+                <div className="timeline-item__content card">
+                  <div className="timeline-item__header">
+                    <h3>Day {plan.day}: {plan.focus}</h3>
+                    <span className="timeline-item__hours">{Math.floor(Math.random()*3)+2} HOURS</span>
+                  </div>
+                  <ul className="timeline-item__tasks">
+                    {plan.tasks.map((task, idx) => (
+                      <li key={idx}>• {task}</li>
+                    ))}
+                  </ul>
                 </div>
               </div>
-            </div>
-          </section>
+            ))}
+          </div>
+        </section>
 
-          {/* ── SECTION 2: Core Strengths (skill chips from non-gap skills) ── */}
-          <section
-            id="strengths"
-            ref={el => sectionRefs.current['strengths'] = el}
-            className="interview-section animate-fade-up delay-2"
-            aria-labelledby="section-strengths"
-          >
-            <h2 id="section-strengths" className="interview-section__title">
-              <span className="section-number">02</span> Core Strengths
-            </h2>
-            <div className="interview-strengths-grid">
-              {report.skillGaps?.filter(g => g.severity === 'low').length > 0
-                ? report.skillGaps.filter(g => g.severity === 'low').map((gap, i) => (
-                    <div key={i} className="card-low interview-strength-card">
-                      <span className="interview-strength-card__dot" style={{ background: '#1a7f5a' }} />
-                      <div>
-                        <p className="interview-strength-card__skill">{gap.skill}</p>
-                        <p className="interview-strength-card__badge" style={{ color: '#1a7f5a' }}>Strong</p>
-                      </div>
-                    </div>
-                  ))
-                : (
-                  <div className="card-low interview-strength-card">
-                    <p className="body-muted">Your profile shows a strong general alignment with the role.</p>
-                  </div>
-                )
-              }
-            </div>
-          </section>
+        {/* Footer inside main */}
+        <footer className="report-footer">
+          <div className="report-footer__left">
+            <strong>InterviewIQ</strong>
+            <span>© 2024 INTERVIEWIQ. ATMOSPHERIC PRECISION DESIGN.</span>
+          </div>
+          <div className="report-footer__right">
+            <a href="#">PRIVACY POLICY</a>
+            <a href="#">TERMS OF SERVICE</a>
+            <a href="#">AI ETHICS</a>
+            <a href="#">CONTACT</a>
+          </div>
+        </footer>
 
-          {/* ── SECTION 3: Skill Gaps ── */}
-          <section
-            id="gaps"
-            ref={el => sectionRefs.current['gaps'] = el}
-            className="interview-section animate-fade-up"
-            aria-labelledby="section-gaps"
-          >
-            <h2 id="section-gaps" className="interview-section__title">
-              <span className="section-number">03</span> Skill Gaps
-            </h2>
-            {report.skillGaps?.length > 0 ? (
-              <div className="interview-gaps-list">
-                {report.skillGaps.map((gap, i) => (
-                  <div key={i} className="interview-gap-item card-low">
-                    <div className="interview-gap-item__left">
-                      <span
-                        className="interview-gap-item__severity-dot"
-                        style={{ background: severityColor[gap.severity] }}
-                        aria-label={`${gap.severity} severity`}
-                      />
-                      <span className="interview-gap-item__skill">{gap.skill}</span>
-                    </div>
-                    <span
-                      className="interview-gap-item__badge chip"
-                      style={{ background: severityBg[gap.severity], color: severityColor[gap.severity] }}
-                    >
-                      {gap.severity}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="card-low"><p className="body-muted">No significant skill gaps identified.</p></div>
-            )}
-          </section>
+      </main>
 
-          {/* ── SECTION 4: Technical Questions ── */}
-          <section
-            id="technical"
-            ref={el => sectionRefs.current['technical'] = el}
-            className="interview-section animate-fade-up"
-            aria-labelledby="section-technical"
-          >
-            <h2 id="section-technical" className="interview-section__title">
-              <span className="section-number">04</span> Technical Questions
-            </h2>
-            <p className="body-muted interview-section__desc">
-              Predicted questions the interviewer is likely to ask based on your JD and profile.
-            </p>
-            {report.technicalQuestions?.length > 0 ? (
-              <div className="interview-accordion">
-                {report.technicalQuestions.map((q, i) => (
-                  <AccordionItem key={i} index={`tech-${i}`} {...q} />
-                ))}
-              </div>
-            ) : (
-              <div className="card-low"><p className="body-muted">No technical questions generated.</p></div>
-            )}
-          </section>
-
-          {/* ── SECTION 5: Behavioral Questions ── */}
-          <section
-            id="behavioral"
-            ref={el => sectionRefs.current['behavioral'] = el}
-            className="interview-section animate-fade-up"
-            aria-labelledby="section-behavioral"
-          >
-            <h2 id="section-behavioral" className="interview-section__title">
-              <span className="section-number">05</span> Behavioral Questions
-            </h2>
-            <p className="body-muted interview-section__desc">
-              STAR-format questions focused on your competencies and cultural fit.
-            </p>
-            {report.behavioralQuestions?.length > 0 ? (
-              <div className="interview-accordion">
-                {report.behavioralQuestions.map((q, i) => (
-                  <AccordionItem key={i} index={`beh-${i}`} {...q} />
-                ))}
-              </div>
-            ) : (
-              <div className="card-low"><p className="body-muted">No behavioral questions generated.</p></div>
-            )}
-          </section>
-
-          {/* ── SECTION 6: 7-Day Prep Plan ── */}
-          <section
-            id="prep-plan"
-            ref={el => sectionRefs.current['prep-plan'] = el}
-            className="interview-section animate-fade-up"
-            aria-labelledby="section-prep"
-          >
-            <h2 id="section-prep" className="interview-section__title">
-              <span className="section-number">06</span> 7-Day Prep Plan
-            </h2>
-            {report.preparationPlan?.length > 0 ? (
-              <div className="interview-prep-list">
-                {report.preparationPlan.map((dayPlan) => (
-                  <div key={dayPlan.day} className="interview-prep-day card">
-                    <div className="interview-prep-day__header">
-                      <div className="interview-prep-day__badge">Day {dayPlan.day}</div>
-                      <h3 className="interview-prep-day__focus">{dayPlan.focus}</h3>
-                    </div>
-                    <ul className="interview-prep-day__tasks">
-                      {dayPlan.tasks?.map((task, i) => (
-                        <li key={i} className="interview-prep-day__task">
-                          <span className="interview-prep-day__check" aria-hidden="true" />
-                          {task}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="card-low"><p className="body-muted">No preparation plan generated.</p></div>
-            )}
-          </section>
-
-        </main>
-      </div>
     </div>
   )
 }

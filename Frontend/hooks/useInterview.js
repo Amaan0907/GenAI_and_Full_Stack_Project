@@ -20,14 +20,14 @@ export const useInterview=()=>{
         let response=null
         try{
             response=await generateInterviewReport({jobDescription,selfDescription,resumeFile})
-            setReport(response.interviewReport)
+            setReport(response.data)
         }catch(error){
             console.log(error);
             
         }finally{
             setLoading(false)
         }
-        return response?.interviewReport
+        return response?.data
     }
 
     const getReportById=async(interviewId)=>{
@@ -35,13 +35,13 @@ export const useInterview=()=>{
         let response=null
         try {
             response=await getInterviewReportById(interviewId)
-            setReport(response.interviewReport)
+            setReport(response.data)
         } catch (error) {
             console.log(error)
         }finally{
             setLoading(false)
         }
-        return response?.interviewReport
+        return response?.data
     }
 
     const getReports=async()=>{
@@ -50,14 +50,14 @@ export const useInterview=()=>{
 
         try {
             response=await getAllInterviewReports()
-            setReports(response.interviewReports)
+            setReports(response.data.interviewReports)
         } catch (error) {
             console.log(error);
             
         }finally{
             setLoading(false)
         }
-        return response?.interviewReports 
+        return response?.data.interviewReports 
     }
 
     return {loading,report,reports,generateReport,getReportById,getReports}

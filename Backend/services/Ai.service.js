@@ -156,17 +156,26 @@ async function generateInterviewReport({resume,selfDescription,jobDescription}) 
                         Job Description: ${jobDescription}
 `;
 
-    const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-        config: {
-            responseMimeType: "application/json",
-            responseSchema: interviewReportSchema,
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-1.5-flash",
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: interviewReportSchema,
+            }
+        });
+        
+        if (!response || !response.text) {
+            throw new Error("Empty response from AI service");
         }
-    });
-    console.log(response.text);
-    
-    return JSON.parse(response.text);
+
+        console.log("AI Response:", response.text);
+        return JSON.parse(response.text);
+    } catch (error) {
+        console.error("AI Generation Error:", error);
+        throw error;
+    }
 }
 
 export {generateInterviewReport};
