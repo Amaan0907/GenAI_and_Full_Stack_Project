@@ -10,8 +10,9 @@ connectToDB()
         console.log("ERROR:",error)
         throw error
     })
-    app.listen(process.env.PORT,()=>{
-        console.log(`Server is running on port ${process.env.PORT}`)
+    const port = process.env.PORT || 3000
+    app.listen(port,()=>{
+        console.log(`Server is running on port ${port}`)
     })
     // generateInterviewReport({resume,selfDescription,jobDescription})
 }
