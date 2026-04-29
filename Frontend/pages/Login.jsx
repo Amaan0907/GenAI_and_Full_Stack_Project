@@ -8,7 +8,7 @@ const AuthPage = () => {
   const initialTab = searchParams.get('tab') === 'register' ? 'register' : 'login'
   const [activeTab, setActiveTab] = useState(initialTab)
   const navigate = useNavigate()
-  const { loading, handleLogin, handleRegister } = useAuth()
+  const { loading, error, handleLogin, handleRegister } = useAuth()
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState('')
@@ -19,23 +19,27 @@ const AuthPage = () => {
   const [regEmail, setRegEmail] = useState('')
   const [regPassword, setRegPassword] = useState('')
   const [regConfirm, setRegConfirm] = useState('')
-  const [regError, setRegError] = useState('')
+  const [localRegError, setLocalRegError] = useState('')
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault()
-    await handleLogin({ email: loginEmail, password: loginPassword })
-    navigate('/dashboard')
+    const success = await handleLogin({ email: loginEmail, password: loginPassword })
+    if (success) {
+      navigate('/dashboard')
+    }
   }
 
   const handleRegisterSubmit = async (e) => {
     e.preventDefault()
-    setRegError('')
+    setLocalRegError('')
     if (regPassword !== regConfirm) {
-      setRegError('Passwords do not match.')
+      setLocalRegError('Passwords do not match.')
       return
     }
-    await handleRegister({ username: regUsername, email: regEmail, password: regPassword })
-    navigate('/dashboard')
+    const success = await handleRegister({ username: regUsername, email: regEmail, password: regPassword })
+    if (success) {
+      navigate('/dashboard')
+    }
   }
 
   return (
@@ -98,6 +102,9 @@ const AuthPage = () => {
               </div>
 
               <form onSubmit={handleLoginSubmit} className="auth-form" noValidate>
+                {error && (
+                  <p className="auth-error" role="alert">{error}</p>
+                )}
                 <div className="auth-field">
                   <label htmlFor="login-email" className="form-label">Email address</label>
                   <input
@@ -229,8 +236,11 @@ const AuthPage = () => {
                   </div>
                 </div>
 
-                {regError && (
-                  <p className="auth-error" role="alert">{regError}</p>
+                {localRegError && (
+                  <p className="auth-error" role="alert">{localRegError}</p>
+                )}
+                {error && (
+                  <p className="auth-error" role="alert">{error}</p>
                 )}
 
                 <button
